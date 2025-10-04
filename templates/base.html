@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ user_theme }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Achievify - The Goal Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h2>🎯 Achievify</h2>
+                <span class="nav-subtitle">The Goal Tracker</span>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}" class="nav-link">Goals</a>
+                <a href="{{ url_for('about') }}" class="nav-link">About</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('habits') }}" class="nav-link">Habits</a>
+                <a href="{{ url_for('bills') }}" class="nav-link">Bills</a>
+                <a href="{{ url_for('analytics') }}" class="nav-link">Analytics</a>
+                <a href="{{ url_for('settings') }}" class="nav-link">Settings</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+                <a href="{{ url_for('register') }}" class="nav-link">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+            <i
+                class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' if category == 'warning' else 'times-circle' }}"></i>
+            {{ message }}
+            <button class="flash-close">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" class="scroll-top-btn" title="Go to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2025 Achievify - The Goal Tracker. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Flash message auto-dismiss
+        document.addEventListener('DOMContentLoaded', function () {
+            const flashMessages = document.querySelectorAll('.flash-message');
+
+            flashMessages.forEach(function (message) {
+                // Auto dismiss after 5 seconds
+                setTimeout(function () {
+                    message.style.animation = 'slideInRight 0.3s ease reverse';
+                    setTimeout(function () {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+
+                // Manual dismiss
+                const closeBtn = message.querySelector('.flash-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function () {
+                        message.style.animation = 'slideInRight 0.3s ease reverse';
+                        setTimeout(function () {
+                            message.remove();
+                        }, 300);
+                    });
+                }
+            });
+        });
+
+        // Auto-hiding navbar functionality
+        let lastScrollTop = 0;
+        const navbar = document.querySelector('.navbar');
+        let ticking = false;
+
+        function updateNavbar() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down & past 100px
+                navbar.classList.add('navbar-hidden');
+            } else {
+                // Scrolling up or at top
+                navbar.classList.remove('navbar-hidden');
+            }
+
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            ticking = false;
+        }
+
+        window.addEventListener('scroll', function () {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbar);
+                ticking = true;
+            }
+        });
+
+        // Scroll to top functionality
+        const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+        window.addEventListener('scroll', function () {
+            if (window.pageYOffset > 300) {
+                scrollTopBtn.classList.add('show');
+            } else {
+                scrollTopBtn.classList.remove('show');
+            }
+        });
+
+        scrollTopBtn.addEventListener('click', function () {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+
+</html>

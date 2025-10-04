@@ -1,0 +1,21 @@
+Flask==2.3.3
+Flask-Login==0.6.3
+Flask-PyMongo==2.3.0
+Flask-WTF==1.2.2
+WTForms==3.2.1
+Flask-Dance==7.0.0
+SQLAlchemy==1.4.53
+Flask-SQLAlchemy==3.0.5
+pymongo==4.5.0
+dnspython==2.4.2
+bcrypt==4.0.1
+python-dotenv==1.0.0
+reportlab==4.0.4
+Werkzeug==2.3.7
+itsdangerous==2.1.2
+click==8.1.7
+Jinja2==3.1.2
+MarkupSafe==2.1.3
+blinker==1.6.2
+gunicorn==21.2.0
+# Using SQLAlchemy 1.4.x for better Flask-Dance compatibility

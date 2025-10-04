@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Bills - Achievify{% endblock %}
+
+{% block content %}
+<div class="bills-container">
+    <div class="page-header">
+        <h1><i class="fas fa-receipt"></i> Utility Bill Tracker</h1>
+        <p>Monitor your milk and water expenses</p>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="showAddBillModal('milk')">
+                <i class="fas fa-plus"></i> Add Milk Bill
+            </button>
+            <button class="btn btn-secondary" onclick="showAddBillModal('water')">
+                <i class="fas fa-plus"></i> Add Water Bill
+            </button>
+            <button class="btn btn-success" onclick="exportBills('milk')">
+                <i class="fas fa-download"></i> Export Milk Bills
+            </button>
+            <button class="btn btn-info" onclick="exportBills('water')">
+                <i class="fas fa-download"></i> Export Water Bills
+            </button>
+        </div>
+    </div>
+
+    <!-- Monthly Summary Cards -->
+    <div class="monthly-summary">
+        <div class="summary-card milk-card">
+            <div class="summary-icon">
+                <i class="fas fa-glass-whiskey"></i>
+            </div>
+            <div class="summary-content">
+                <h3>Milk This Month</h3>
+                <div class="summary-amount">₹{{ "%.2f"|format(monthly_data.milk.amount) }}</div>
+                <div class="summary-consumption">{{ monthly_data.milk.consumption }} liters</div>
+            </div>
+        </div>
+
+        <div class="summary-card water-card">
+            <div class="summary-icon">
+                <i class="fas fa-tint"></i>
+            </div>
+            <div class="summary-content">
+                <h3>Water This Month</h3>
+                <div class="summary-amount">₹{{ "%.2f"|format(monthly_data.water.amount) }}</div>
+                <div class="summary-consumption">{{ monthly_data.water.consumption }} liters</div>
+            </div>
+        </div>
+
+        <div class="summary-card total-card">
+            <div class="summary-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="summary-content">
+                <h3>Total This Month</h3>
+                <div class="summary-amount">₹{{ "%.2f"|format(monthly_data.milk.amount + monthly_data.water.amount) }}
+                </div>
+                <div class="summary-consumption">Combined utilities</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bills Tables -->
+    <div class="bills-section">
+        <div class="bills-table-container">
+            <div class="table-header">
+                <h3><i class="fas fa-glass-whiskey"></i> Recent Milk Bills</h3>
+                <button class="btn btn-sm btn-primary" onclick="showAddBillModal('milk')">Add Bill</button>
+            </div>
+
+            {% if milk_bills %}
+            <div class="bills-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Consumption</th>
+                            <th>Rate per Liter</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in milk_bills %}
+                        <tr>
+                            <td>{{ bill.date.strftime('%d-%m-%Y') if bill.date else 'N/A' }}</td>
+                            <td>₹{{ "%.2f"|format(bill.amount) }}</td>
+                            <td>{{ bill.consumption }} {{ bill.unit }}</td>
+                            <td>₹{{ "%.2f"|format(bill.amount / bill.consumption) if bill.consumption > 0 else 'N/A' }}
+                            </td>
+                            <td>{{ bill.notes or '-' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" onclick="editBill('{{ bill.id }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBill('{{ bill.id }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-table">
+                <i class="fas fa-glass-whiskey"></i>
+                <p>No milk bills recorded yet</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="bills-table-container">
+            <div class="table-header">
+                <h3><i class="fas fa-tint"></i> Recent Water Bills</h3>
+                <button class="btn btn-sm btn-primary" onclick="showAddBillModal('water')">Add Bill</button>
+            </div>
+
+            {% if water_bills %}
+            <div class="bills-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Consumption</th>
+                            <th>Rate per Liter</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bill in water_bills %}
+                        <tr>
+                            <td>{{ bill.date.strftime('%d-%m-%Y') if bill.date else 'N/A' }}</td>
+                            <td>₹{{ "%.2f"|format(bill.amount) }}</td>
+                            <td>{{ bill.consumption }} {{ bill.unit }}</td>
+                            <td>₹{{ "%.2f"|format(bill.amount / bill.consumption) if bill.consumption > 0 else 'N/A' }}
+                            </td>
+                            <td>{{ bill.notes or '-' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" onclick="editBill('{{ bill.id }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBill('{{ bill.id }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-table">
+                <i class="fas fa-tint"></i>
+                <p>No water bills recorded yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Bill Modal -->
+<div id="addBillModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus"></i> Add <span id="billTypeTitle">Bill</span></h3>
+            <span class="close" onclick="closeModal('addBillModal')">&times;</span>
+        </div>
+        <form id="addBillForm" method="POST" action="/add_bill">
+            <input type="hidden" id="billType" name="bill_type" value="">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="billDate" class="form-label">
+                        <i class="fas fa-calendar"></i> Date
+                    </label>
+                    <input type="date" id="billDate" name="date" class="form-input" required value="{{ today }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="billAmount" class="form-label">
+                        <i class="fas fa-rupee-sign"></i> Amount
+                    </label>
+                    <div class="amount-input-wrapper">
+                        <input type="number" id="billAmount" name="amount" class="form-input" step="0.01" min="0"
+                            required placeholder="0.00">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="billConsumption" class="form-label">
+                        <i class="fas fa-tachometer-alt"></i> Consumption
+                    </label>
+                    <input type="number" id="billConsumption" name="consumption" class="form-input" step="0.01" min="0"
+                        required placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="billUnit" class="form-label">
+                        <i class="fas fa-ruler"></i> Unit
+                    </label>
+                    <select id="billUnit" name="unit" class="form-select">
+                        <option value="liters">Liters</option>
+                        <option value="gallons">Gallons</option>
+                        <option value="bottles">Bottles</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="billNotes" class="form-label">
+                    <i class="fas fa-sticky-note"></i> Notes (Optional)
+                </label>
+                <textarea id="billNotes" name="notes" class="form-textarea"
+                    placeholder="Any additional notes about this bill..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('addBillModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Bill</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function showAddBillModal(billType) {
+        // Reset form for adding new bill
+        const form = document.querySelector('#addBillModal form');
+        form.action = '/add_bill';
+        form.reset();
+
+        // Set bill type and title
+        document.getElementById('billType').value = billType;
+        document.getElementById('billTypeTitle').textContent = billType.charAt(0).toUpperCase() + billType.slice(1);
+        document.getElementById('billDate').value = '{{ today }}';
+
+        document.getElementById('addBillModal').style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function editBill(billId) {
+        // Find the bill data and show edit modal
+        fetch(`/get_bill/${billId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showEditBillModal(data.bill);
+                } else {
+                    alert('Error loading bill data: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error loading bill data');
+            });
+    }
+
+    function showEditBillModal(bill) {
+        // Create edit modal (similar to add modal but with existing data)
+        document.getElementById('billType').value = bill.bill_type;
+        document.getElementById('billAmount').value = bill.amount;
+        document.getElementById('billConsumption').value = bill.consumption;
+        document.getElementById('billUnit').value = bill.unit;
+        document.getElementById('billDate').value = bill.date;
+        document.getElementById('billNotes').value = bill.notes || '';
+        document.getElementById('billTypeTitle').textContent = bill.bill_type.charAt(0).toUpperCase() + bill.bill_type.slice(1);
+
+        // Change form action to edit
+        const form = document.querySelector('#addBillModal form');
+        form.action = `/edit_bill/${bill.id}`;
+
+        document.getElementById('addBillModal').style.display = 'block';
+    }
+
+    function exportBills(billType) {
+        // Create CSV export
+        const filename = `${billType}_bills_${new Date().toISOString().split('T')[0]}.csv`;
+        window.location.href = `/export_bills/${billType}`;
+    }
+
+    function deleteBill(billId) {
+        if (confirm('Are you sure you want to delete this bill?')) {
+            fetch(`/delete_bill/${billId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting bill: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error deleting bill');
+                });
+        }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        const modals = document.getElementsByClassName('modal');
+        for (let modal of modals) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    }
+</script>
+{% endblock %}

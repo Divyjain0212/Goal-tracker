@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Add Goal - Achievify{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2><i class="fas fa-bullseye"></i> Add New Goal</h2>
+            <p>Set a new goal and start your journey to achievement</p>
+        </div>
+
+        <form method="POST" class="goal-form-advanced">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group">
+                {{ form.text.label(class="form-label") }}
+                {{ form.text(class="form-textarea", placeholder="Describe your task in detail...") }}
+                {% if form.text.errors %}
+                <div class="form-errors">
+                    {% for error in form.text.errors %}
+                    <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form.priority.label(class="form-label") }}
+                    {{ form.priority(class="form-select") }}
+                    {% if form.priority.errors %}
+                    <div class="form-errors">
+                        {% for error in form.priority.errors %}
+                        <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.category.label(class="form-label") }}
+                    {{ form.category(class="form-input", placeholder="e.g., work, personal, shopping") }}
+                    {% if form.category.errors %}
+                    <div class="form-errors">
+                        {% for error in form.category.errors %}
+                        <span class="error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form.due_date.label(class="form-label") }}
+                {{ form.due_date(class="form-input") }}
+                {% if form.due_date.errors %}
+                <div class="form-errors">
+                    {% for error in form.due_date.errors %}
+                    <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Goal
+                </button>
+                <a href="{{ url_for('index') }}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

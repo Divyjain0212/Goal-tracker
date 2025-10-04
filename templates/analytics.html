@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Achievify{% endblock %}
+
+{% block content %}
+<div class="analytics-app">
+    <!-- Hero Header -->
+    <div class="analytics-hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+                <p>Discover insights and track your productivity journey</p>
+            </div>
+            <div class="hero-summary">
+                <div class="summary-card">
+                    <div class="summary-icon goals">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <div class="summary-info">
+                        <div class="summary-number">{{ data.goals.completion_rate or 0 }}%</div>
+                        <div class="summary-label">Success Rate</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon habits">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="summary-info">
+                        <div class="summary-number">{{ data.achievements.current_streak or 0 }}</div>
+                        <div class="summary-label">Day Streak</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Analytics Grid -->
+    <div class="analytics-grid">
+        <!-- Goals Overview Card -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Goals Overview</span>
+                </div>
+                <div class="card-action">
+                    <span class="completion-badge">{{ data.goals.completion_rate or 0 }}% Complete</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric">
+                        <div class="metric-value">{{ data.goals.total or 0 }}</div>
+                        <div class="metric-label">Total Goals</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">{{ data.goals.completed or 0 }}</div>
+                        <div class="metric-label">Completed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">{{ data.goals.pending or 0 }}</div>
+                        <div class="metric-label">Pending</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="goalsPriorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Habits Overview Card -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-seedling"></i>
+                    <span>Habits Overview</span>
+                </div>
+                <div class="card-action">
+                    <span class="habit-badge">{{ data.habits.completion_rate or 0 }}% Success</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="metrics-row">
+                    <div class="metric">
+                        <div class="metric-value">{{ data.habits.total or 0 }}</div>
+                        <div class="metric-label">Total Habits</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">{{ data.habits.active or 0 }}</div>
+                        <div class="metric-label">Active</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">{{ data.habits.longest_streak or 0 }}</div>
+                        <div class="metric-label">Best Streak</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="habitsFrequencyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Progress Card -->
+        <div class="analytics-card wide">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-calendar-week"></i>
+                    <span>Weekly Progress</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="chart-container">
+                    <canvas id="weeklyProgressChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievement Insights Card -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-trophy"></i>
+                    <span>Achievements</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="achievement-stats">
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <div class="achievement-value">{{ data.achievements.current_streak or 0 }} days</div>
+                            <div class="achievement-label">Current Streak</div>
+                        </div>
+                    </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <div class="achievement-value">{{ data.achievements.user_level or 'Newcomer' }}</div>
+                            <div class="achievement-label">Your Level</div>
+                        </div>
+                    </div>
+                    <div class="achievement-item">
+                        <div class="achievement-icon">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <div class="achievement-value">{{ data.achievements.achievements_count or 0 }}</div>
+                            <div class="achievement-label">Milestones</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights Card -->
+        <div class="analytics-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Smart Insights</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="insights-list">
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="insight-content">
+                            <h4>Productivity Trend</h4>
+                            {% if data.achievements.monthly_improvement > 0 %}
+                            <p>Great job! You've improved by {{ data.achievements.monthly_improvement }}% this month.
+                            </p>
+                            {% elif data.achievements.monthly_improvement < 0 %} <p>Consider reviewing your goals.
+                                Completion rate decreased by {{ data.achievements.monthly_improvement|abs }}%.</p>
+                                {% else %}
+                                <p>Your productivity has remained steady. Try setting more challenging targets!</p>
+                                {% endif %}
+                        </div>
+                    </div>
+                    <div class="insight-item">
+                        <div class="insight-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="insight-content">
+                            <h4>Best Time</h4>
+                            {% if data.goals.completed > 0 %}
+                            <p>You're most productive in the {{ data.achievements.most_productive_time }}. Schedule
+                                important tasks then!</p>
+                            {% else %}
+                            <p>Start completing goals to discover your most productive time!</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Chart.js Configuration
+    Chart.defaults.font.family = 'Inter, sans-serif';
+    Chart.defaults.color = '#6b7280';
+
+    // Debug: Check if data is available
+    console.log('Analytics data:', {{ data | tojson }});
+    console.log('Habit frequency breakdown:', {{ data.habit_frequency_breakdown | tojson }});
+
+    // Goals Priority Chart
+    const goalsPriorityCtx = document.getElementById('goalsPriorityChart');
+    if (goalsPriorityCtx) {
+        try {
+            new Chart(goalsPriorityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High Priority', 'Medium Priority', 'Low Priority'],
+                    datasets: [{
+                        data: [
+                            {{ data.priority_breakdown.high or 0 }},
+                            {{ data.priority_breakdown.medium or 0 }},
+                            {{ data.priority_breakdown.low or 0 }}
+                        ],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                        borderWidth: 0,
+                        cutout: '65%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+            console.log('Goals Priority Chart created successfully');
+        } catch (error) {
+            console.error('Error creating Goals Priority Chart:', error);
+        }
+    } else {
+        console.error('Goals Priority Chart canvas not found');
+    }
+
+    // Habits Frequency Chart
+    const habitsFrequencyCtx = document.getElementById('habitsFrequencyChart');
+    if (habitsFrequencyCtx) {
+        try {
+            const habitsData = [
+                {{ data.habit_frequency_breakdown.Daily or 0 }},
+                {{ data.habit_frequency_breakdown.Weekly or 0 }}, 
+                {{ data.habit_frequency_breakdown.Monthly or 0 }}
+            ];
+            
+            // Check if there's any habits data
+            const hasHabitsData = habitsData.some(value => value > 0);
+            
+            if (hasHabitsData) {
+                new Chart(habitsFrequencyCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Daily', 'Weekly', 'Monthly'],
+                        datasets: [{
+                            data: habitsData,
+                            backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
+                            borderWidth: 0,
+                            cutout: '65%'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Habits Frequency Chart created successfully');
+            } else {
+                // Show empty state message
+                const chartContainer = habitsFrequencyCtx.parentElement;
+                chartContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 250px; color: #6b7280; text-align: center;"><div><i class="fas fa-chart-pie" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i><p>No habits data available<br><small>Start creating habits to see analytics</small></p></div></div>';
+                console.log('No habits data available, showing empty state');
+            }
+        } catch (error) {
+            console.error('Error creating Habits Frequency Chart:', error);
+        }
+    } else {
+        console.error('Habits Frequency Chart canvas not found');
+    }
+
+    // Weekly Progress Chart
+    const weeklyProgressCtx = document.getElementById('weeklyProgressChart');
+    if (weeklyProgressCtx) {
+        try {
+            new Chart(weeklyProgressCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for day in data.weekly_progress %}
+                        '{{ day.date }}'{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Goals Completed',
+                        data: [
+                            {% for day in data.weekly_progress %}
+                            {{ day.completed }}{% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        ],
+                        backgroundColor: '#667eea',
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: '#f3f4f6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            console.log('Weekly Progress Chart created successfully');
+        } catch (error) {
+            console.error('Error creating Weekly Progress Chart:', error);
+        }
+    } else {
+        console.error('Weekly Progress Chart canvas not found');
+    }
+</script>
+{% endblock %}
